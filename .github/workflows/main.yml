@@ -37,7 +37,7 @@ jobs:
       env:
         cache-name: cache-pip
       with: 
-        path: /root/.cache/pip
+        path: ~/.cache/pip
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/poetry.lock') }}
         restore-keys: |
           ${{ runner.os }}-build-${{ env.cache-name }}-
