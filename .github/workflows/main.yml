@@ -33,6 +33,13 @@ jobs:
         path: ~/.cache/pip
         key: ${{ runner.os }}-build-cache-pip-${{ hashFiles('**/poetry.lock') }}
         restore-keys: ${{ runner.os }}-build-cache-pip-
+        
+    - name: Cache docker
+      uses: actions/cache@v1
+      with: 
+        path: /var/lib/docker
+        key: ${{ runner.os }}-build-cache-docker-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: ${{ runner.os }}-build-cache-docker-
 
     - name: Install Poetry
       run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
