@@ -1,0 +1,10 @@
+[run]
+source =
+    app
+
+[report]
+omit =
+    app/manage.py
+    app/config/asgi.py
+    app/config/wsgi.py
+    */migrations/*
