@@ -16,11 +16,8 @@ env:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  Build:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -45,9 +42,17 @@ jobs:
       run: ~/.poetry/bin/poetry export -f requirements.txt > requirements.txt
 
     - name: Build Docker Image
-      run: docker build -t 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest .
-
-    - name: Push Docker Image
       run: |
-        AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action
-        AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} docker push 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest
+        docker build -t github-action:latest .
+        docker tag github-action:latest 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest
+
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: pytest
+      run: docker run --rm -it github-action pytest
+      
+#     - name: Push Docker Image
+#       run: |
+#         AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action
+#         AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} docker push 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest
