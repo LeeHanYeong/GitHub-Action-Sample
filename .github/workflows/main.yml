@@ -13,9 +13,7 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   Build:
     runs-on: ubuntu-latest
     steps:
@@ -34,7 +32,18 @@ jobs:
           ${{ runner.os }}-build-
           ${{ runner.os }}-
 
-    # Runs a single command using the runners shell
+    - name: Cache pip
+      uses: actions/cache@v1
+      env:
+        cache-name: cache-pip
+      with: 
+        path: /root/.cache/pip
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
     - name: Install Poetry
       run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 
@@ -46,13 +55,13 @@ jobs:
         docker build -t github-action:latest .
         docker tag github-action:latest 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest
 
-  Test:
-    runs-on: ubuntu-latest
-    steps:
     - name: pytest
-      run: docker run --rm github-action pytest
+      run: docker run --rm github-action:latest coverage run --source='.' -m pytest app
       
-#     - name: Push Docker Image
-#       run: |
-#         AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action
-#         AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} docker push 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest
+    - name: Push DockerImage
+      run: |
+        aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action
+        docker push 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest
+
+    - name: ECS UpdateService
+      run: aws ecs update-service --cluster GitHub-Action-Cluster --service GitHub-Action-Service
