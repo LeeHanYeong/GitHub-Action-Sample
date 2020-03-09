@@ -25,7 +25,10 @@ SECRET_KEY = 'zcevk7jk6*tvhv7(4i^$6)=!+s1z(kj+#^x_m@xbc1kxm^ykod'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    'action.lhy.kr',
+]
 
 AUTH_USER_MODEL = 'members.User'
 
