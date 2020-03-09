@@ -30,6 +30,5 @@ jobs:
     - name: Poetry export requirements.txt
       uses: abatilo/actions-poetry@v1.5.0
       with:
-        python_version: 3.8.1
         poetry_version: 1.0.5
         args: poetry export -f requirements.txt > requirements.txt
