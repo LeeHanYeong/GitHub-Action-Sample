@@ -22,24 +22,32 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Poetry initialization
-        uses: abatilo/actions-poetry@v1.5.0
-        with:
-          poetry_version: 1.0.5
+    - name: Checkout
+      uses: actions/checkout@v2
 
-      - name: Checkout
-        uses: actions/checkout@v2
+    - name: Cache Poetry
+      uses: actions/cache@v1
+      env:
+        cache-name: cache-poetry
+      with: 
+        path: ~/.poetry
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
 
-      # Runs a single command using the runners shell
-      - name: Poetry export requirements.txt
-        uses: abatilo/actions-poetry@v1.5.0
-        with:
-          args: export -f requirements.txt > requirements.txt 
+    # Runs a single command using the runners shell
+    - name: Install Poetry
+      run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 
-      - name: Build Docker Image
-        run: docker build -t 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest .
+    - name: Poetry export requirements.txt
+      run: ~/.poetry/bin/poetry export -f requirements.txt > requirements.txt
 
-      - name: Push Docker Image
-        run: |
-          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action
-          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} docker push 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest
+    - name: Build Docker Image
+      run: docker build -t 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest .
+
+    - name: Push Docker Image
+      run: |
+        AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action
+        AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} docker push 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest
