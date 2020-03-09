@@ -5,7 +5,7 @@ COPY    requirements.txt /tmp/requirements.txt
 RUN     pip3 install -r /tmp/requirements.txt
 
 COPY    . /srv/
-WORKDIR /srv/app
+WORKDIR /srv
 
-CMD     python3 manage.py runserver 0:80
+CMD     python3 app/manage.py runserver 0:80
 EXPOSE  80
