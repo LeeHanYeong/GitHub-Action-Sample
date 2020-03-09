@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: pytest
-      run: docker run --rm -it github-action pytest
+      run: docker run --rm github-action pytest
       
 #     - name: Push Docker Image
 #       run: |
