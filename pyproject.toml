@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "github-action-sample"
+version = "0.1.0"
+description = ""
+authors = ["이한영 <dev@lhy.kr>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+django = "^3.0.4"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
