@@ -1,0 +1,4 @@
+.git
+.secrets
+.pytest_cache
+.idea

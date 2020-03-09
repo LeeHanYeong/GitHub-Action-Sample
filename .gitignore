@@ -1,3 +1,5 @@
+requirements.txt
+/.secrets
 /secrets.json
 /.temp
 /.secrets
