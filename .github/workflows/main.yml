@@ -32,3 +32,11 @@ jobs:
       with:
         poetry_version: 1.0.5
         args: export -f requirements.txt > requirements.txt 
+
+    - name: Build Docker Image
+      run: docker build -t 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest .
+    
+    - name: Push Docker Image
+      run: |
+        AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action
+        AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} docker push 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest
