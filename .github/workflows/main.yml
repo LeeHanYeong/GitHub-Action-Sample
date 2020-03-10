@@ -51,4 +51,4 @@ jobs:
       run: aws ecs update-service --region ap-northeast-2 --cluster GitHub-Action-Cluster --service GitHub-Action-Service
 
     - name: Coveralls
-      run: docker run --rm -it github-action:latest coverage run --source='app' -m pytest app && COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
+      run: docker run --rm github-action:latest coverage run --source='app' -m pytest app && COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
