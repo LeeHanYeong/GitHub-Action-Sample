@@ -1,14 +1,9 @@
-[paths]
-source =
-    app
-
 [run]
 source =
-    app
+    .
 
-[report]
 omit =
-    app/manage.py
-    app/config/asgi.py
-    app/config/wsgi.py
+    manage.py
+    config/asgi.py
+    config/wsgi.py
     */migrations/*

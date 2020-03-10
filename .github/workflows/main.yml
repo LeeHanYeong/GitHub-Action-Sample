@@ -9,8 +9,10 @@ on:
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-  ECR_REPO: ${{ secrets.ECR_REPO }}
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  COVERAGE_RCFILE: ${{ secrets.COVERAGE_RCFILE }}
+  LOCAL_REPO: github-action:latest
+  ECR_REPO: ${{ secrets.ECR_REPO }}:latest
 
 jobs:
   Build:
@@ -21,11 +23,19 @@ jobs:
 
     - name: Cache Poetry
       uses: actions/cache@v1
-      with: 
+      with:
         path: ~/.poetry
         key: ${{ runner.os }}-build-cache-poetry-${{ hashFiles('**/poetry.lock') }}
         restore-keys: |
           ${{ runner.os }}-build-cache-poetry-
+
+    - name: Cache pip
+      uses: actions/cache@v1
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
 
     - name: Install Poetry
       run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
@@ -36,19 +46,19 @@ jobs:
     - name: Build Docker Image
       run: |
         aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action
-        docker pull ${{ env.ECR_REPO }}
-        docker build -t github-action:latest .
+        docker pull ${{ env.ECR_REPO }} || true
+        docker build -t ${{ env.LOCAL_REPO }} .
 
     - name: pytest
-      run: docker run --rm github-action:latest coverage run --source='.' -m pytest app
+      run: docker run --rm ${{ env.LOCAL_REPO }} coverage run --source='.' -m pytest app
 
     - name: Push DockerImage
       run: |
-        docker tag github-action:latest ${{ env.ECR_REPO }}
+        docker tag ${{ env.LOCAL_REPO }} ${{ env.ECR_REPO }}
         docker push ${{ env.ECR_REPO }}
 
     - name: ECS UpdateService
       run: aws ecs update-service --region ap-northeast-2 --cluster GitHub-Action-Cluster --service GitHub-Action-Service
 
-    - name: Coveralls
-      run: docker run --rm github-action:latest coverage run --source='app' -m pytest app && COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
+    - name: Codecov
+      run: docker run --rm ${{ env.LOCAL_REPO }} /bin/bash -c "cd app && coverage run -m pytest && codecov --token=${{ env.CODECOV_TOKEN }}"

@@ -1,6 +1,7 @@
 FROM    python:3.7-slim
 ENV     LANG=C.UTF-8
 
+RUN     apt -y update && apt -y install git
 COPY    requirements.txt /tmp/requirements.txt
 RUN     pip3 install -r /tmp/requirements.txt
 
