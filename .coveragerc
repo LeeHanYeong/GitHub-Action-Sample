@@ -1,3 +1,7 @@
+[paths]
+source =
+    app
+
 [run]
 source =
     app

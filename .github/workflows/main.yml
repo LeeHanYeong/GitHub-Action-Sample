@@ -10,6 +10,7 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+  ECR_REPO: ${{ secrets.ECR_REPO }}
 
 jobs:
   Build:
@@ -26,22 +27,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-build-cache-poetry-
 
-    - name: Cache pip
-      uses: actions/cache@v1
-      with: 
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-build-cache-pip-${{ hashFiles('**/poetry.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-build-cache-pip-
-        
-    - name: Cache docker
-      uses: actions/cache@v1
-      with: 
-        path: /var/lib/docker
-        key: ${{ runner.os }}-build-cache-docker-${{ hashFiles('**/poetry.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-build-cache-docker-
-
     - name: Install Poetry
       run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 
@@ -50,16 +35,20 @@ jobs:
 
     - name: Build Docker Image
       run: |
+        aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action
+        docker pull ${{ ECR_REPO }}
         docker build -t github-action:latest .
-        docker tag github-action:latest 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest
 
     - name: pytest
       run: docker run --rm github-action:latest coverage run --source='.' -m pytest app
-      
+
     - name: Push DockerImage
       run: |
-        aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action
-        docker push 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action:latest
+        docker tag github-action:latest ${{ ECR_REPO }}
+        docker push ${{ ECR_REPO }}
 
     - name: ECS UpdateService
       run: aws ecs update-service --region ap-northeast-2 --cluster GitHub-Action-Cluster --service GitHub-Action-Service
+
+    - name: Coveralls
+      run: docker run --rm -it github-action:latest coverage run --source='app' -m pytest app && COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
