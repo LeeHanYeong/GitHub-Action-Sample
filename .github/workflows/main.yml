@@ -36,7 +36,7 @@ jobs:
     - name: Build Docker Image
       run: |
         aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/github-action
-        docker pull ${{ ECR_REPO }}
+        docker pull ${{ env.ECR_REPO }}
         docker build -t github-action:latest .
 
     - name: pytest
@@ -44,8 +44,8 @@ jobs:
 
     - name: Push DockerImage
       run: |
-        docker tag github-action:latest ${{ ECR_REPO }}
-        docker push ${{ ECR_REPO }}
+        docker tag github-action:latest ${{ env.ECR_REPO }}
+        docker push ${{ env.ECR_REPO }}
 
     - name: ECS UpdateService
       run: aws ecs update-service --region ap-northeast-2 --cluster GitHub-Action-Cluster --service GitHub-Action-Service
