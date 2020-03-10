@@ -25,21 +25,24 @@ jobs:
       with: 
         path: ~/.poetry
         key: ${{ runner.os }}-build-cache-poetry-${{ hashFiles('**/poetry.lock') }}
-        restore-keys: ${{ runner.os }}-build-cache-poetry-
+        restore-keys: |
+          ${{ runner.os }}-build-cache-poetry-
 
     - name: Cache pip
       uses: actions/cache@v1
       with: 
         path: ~/.cache/pip
         key: ${{ runner.os }}-build-cache-pip-${{ hashFiles('**/poetry.lock') }}
-        restore-keys: ${{ runner.os }}-build-cache-pip-
+        restore-keys: |
+          ${{ runner.os }}-build-cache-pip-
         
     - name: Cache docker
       uses: actions/cache@v1
       with: 
         path: /var/lib/docker
         key: ${{ runner.os }}-build-cache-docker-${{ hashFiles('**/poetry.lock') }}
-        restore-keys: ${{ runner.os }}-build-cache-docker-
+        restore-keys: |
+          ${{ runner.os }}-build-cache-docker-
 
     - name: Install Poetry
       run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
